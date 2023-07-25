@@ -23,7 +23,7 @@ This module will create a [**kubernetes-style** endpoints](https://kubernetes.io
 
 ## ✨ Core Features
 * ⚡ Lightweight
-* 🌲 Low dependency
+* 🌲 Low dependency (only `gin`)
 * 🔥 High efficiency
 * 🔨 Highly customizable
 * ⎈  Kubernetes-style
