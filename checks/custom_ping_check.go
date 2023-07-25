@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
+// NewCustomPingCheck creates a new custom health check that pings a
+// specified URL.
 func NewCustomPingCheck(url, method string, timeout int, body io.Reader, headers map[string]string) Check {
+	// Default to GET method and 500 millisecond timeout if not
+	// specified.
 	if method == "" {
 		method = http.MethodGet
 	}
@@ -22,6 +26,8 @@ func NewCustomPingCheck(url, method string, timeout int, body io.Reader, headers
 		body:    body,
 		headers: headers,
 	}
+
+	// Create an HTTP client with the specified timeout.
 	customPingCheck.client = http.Client{
 		Timeout: time.Duration(timeout) * time.Millisecond,
 	}
@@ -29,6 +35,8 @@ func NewCustomPingCheck(url, method string, timeout int, body io.Reader, headers
 	return customPingCheck
 }
 
+// customPingCheck represents a health check that pings a specified
+// URL.
 type customPingCheck struct {
 	url     string
 	method  string
@@ -38,6 +46,7 @@ type customPingCheck struct {
 	headers map[string]string
 }
 
+// Pass checks if the specified URL is reachable.
 func (p *customPingCheck) Pass() bool {
 	req, err := http.NewRequest(p.method, p.url, p.body)
 	if err != nil {
@@ -55,6 +64,7 @@ func (p *customPingCheck) Pass() bool {
 	return resp.StatusCode < http.StatusMultipleChoices
 }
 
+// Name returns the name of the custom ping check.
 func (p *customPingCheck) Name() string {
 	return "Ping-" + p.url
 }

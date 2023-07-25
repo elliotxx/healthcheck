@@ -5,6 +5,7 @@ import (
 	"regexp"
 )
 
+// NewEnvCheck creates a new environment variable check.
 func NewEnvCheck(envVariable string) Check {
 	return &envCheck{
 		envVariable: envVariable,
@@ -12,6 +13,8 @@ func NewEnvCheck(envVariable string) Check {
 	}
 }
 
+// NewEnvRegexCheck creates a new environment variable check with a
+// regular expression.
 func NewEnvRegexCheck(envVariable string, r string) Check {
 	return &envCheck{
 		envVariable: envVariable,
@@ -19,11 +22,13 @@ func NewEnvRegexCheck(envVariable string, r string) Check {
 	}
 }
 
+// envCheck is a struct for defining an environment variable check.
 type envCheck struct {
 	envVariable string
 	regex       string
 }
 
+// Pass checks if the environment variable passes the check.
 func (e *envCheck) Pass() bool {
 	envValue := os.Getenv(e.envVariable)
 	if envValue == "" {
@@ -36,6 +41,7 @@ func (e *envCheck) Pass() bool {
 	return true
 }
 
+// Name returns the name of the environment variable check.
 func (e *envCheck) Name() string {
 	return "Env-" + e.envVariable
 }

@@ -6,10 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Register registers a default health check handler with the
+// specified router group.
 func Register(r *gin.RouterGroup) error {
 	return registerFor(r, NewDefaultConfig())
 }
 
+// RegisterFor registers one or more health check handlers with the
+// specified router group and configurations.
 func RegisterFor(r *gin.RouterGroup, configs ...Config) error {
 	return registerFor(r, configs...)
 }

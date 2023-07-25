@@ -6,11 +6,15 @@ import (
 	"sync"
 )
 
+// Check represents a health check that can be run to check the status
+// of a service.
 type Check interface {
 	Pass() bool
 	Name() string
 }
 
+// CheckStatuses is an interface for a thread-safe map of check
+// statuses.
 type CheckStatuses interface {
 	Get(k string) (bool, bool)
 	Set(k string, v bool)
@@ -22,17 +26,22 @@ type CheckStatuses interface {
 
 var _ CheckStatuses = &checkStatuses{}
 
+// checkStatuses is a thread-safe implements of CheckStatuses
+// interface.
 type checkStatuses struct {
 	sync.RWMutex
 	m map[string]bool
 }
 
+// NewCheckStatuses creates a new CheckStatuses instance with the
+// specified capacity.
 func NewCheckStatuses(n int) CheckStatuses {
 	return &checkStatuses{
 		m: make(map[string]bool, n),
 	}
 }
 
+// Get returns the value and existence status for the specified key.
 func (cs *checkStatuses) Get(k string) (bool, bool) {
 	cs.RLock()
 	defer cs.RUnlock()
@@ -40,18 +49,21 @@ func (cs *checkStatuses) Get(k string) (bool, bool) {
 	return v, existed
 }
 
+// Set sets the value for the specified key.
 func (cs *checkStatuses) Set(k string, v bool) {
 	cs.Lock()
 	defer cs.Unlock()
 	cs.m[k] = v
 }
 
+// Delete deletes the specified key from the map.
 func (cs *checkStatuses) Delete(k string) {
 	cs.Lock()
 	defer cs.Unlock()
 	delete(cs.m, k)
 }
 
+// Len returns the number of items in the map.
 func (cs *checkStatuses) Len() int {
 	cs.RLock()
 	defer cs.RUnlock()
@@ -59,6 +71,8 @@ func (cs *checkStatuses) Len() int {
 	return len(cs.m)
 }
 
+// Each calls the specified function for each key/value pair in the
+// map.
 func (cs *checkStatuses) Each(f func(k string, v bool)) {
 	cs.RLock()
 	defer cs.RUnlock()
@@ -68,6 +82,11 @@ func (cs *checkStatuses) Each(f func(k string, v bool)) {
 	}
 }
 
+// String returns a string representation of the check statuses.
+// If verbose is true, the output includes pass/fail status for each
+// check.
+// If excludes is non-empty, checks with the specified names are
+// excluded from the output.
 func (cs *checkStatuses) String(verbose bool, excludes []string) string {
 	if len(excludes) > 0 {
 		for _, checkName := range excludes {

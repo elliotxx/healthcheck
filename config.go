@@ -6,12 +6,15 @@ import (
 	"github.com/elliotxx/healthcheck/checks"
 )
 
+// Config represents the configuration for the health check.
 type Config struct {
 	HTTPMethod string
 	Endpoint   string
 	HandlerConfig
 }
 
+// HandlerConfig represents the configuration for the health check
+// handler.
 type HandlerConfig struct {
 	Verbose  bool
 	Excludes []string
@@ -19,11 +22,14 @@ type HandlerConfig struct {
 	FailureNotification
 }
 
+// FailureNotification represents the configuration for failure
+// notifications.
 type FailureNotification struct {
 	Threshold uint32
 	Chan      chan error
 }
 
+// NewDefaultConfig creates a new default health check configuration.
 func NewDefaultConfig() Config {
 	c := NewDefaultHandlerConfig()
 	return Config{
@@ -33,6 +39,8 @@ func NewDefaultConfig() Config {
 	}
 }
 
+// NewDefaultHandlerConfig creates a new default health check handler
+// configuration.
 func NewDefaultHandlerConfig() HandlerConfig {
 	return HandlerConfig{
 		Verbose:             false,
@@ -42,6 +50,8 @@ func NewDefaultHandlerConfig() HandlerConfig {
 	}
 }
 
+// NewDefaultConfigFor creates a new default health check
+// configuration for the specified checks.
 func NewDefaultConfigFor(cs ...checks.Check) Config {
 	c := NewDefaultHandlerConfigFor(cs...)
 	return Config{
@@ -51,6 +61,8 @@ func NewDefaultConfigFor(cs ...checks.Check) Config {
 	}
 }
 
+// NewDefaultHandlerConfigFor creates a new default health check
+// handler configuration for the specified checks.
 func NewDefaultHandlerConfigFor(cs ...checks.Check) HandlerConfig {
 	if len(cs) == 0 {
 		cs = []checks.Check{}
