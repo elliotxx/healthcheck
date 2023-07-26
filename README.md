@@ -41,17 +41,16 @@ go get github.com/elliotxx/healthcheck
 package main
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/elliotxx/healthcheck"
-    "github.com/elliotxx/healthcheck/checks"
+	"github.com/elliotxx/healthcheck"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    r := gin.Default()
+	r := gin.Default()
 
-    healthcheck.Register(r)
-	
-    r.Run()
+	healthcheck.Register(&r.RouterGroup)
+
+	r.Run()
 }
 ```
 
@@ -63,35 +62,39 @@ Or use `NewHandler()` function directly:
 package main
 
 import (
-    "github.com/gin-gonic/gin"
-    "github.com/elliotxx/healthcheck"
-    "github.com/elliotxx/healthcheck/checks"
+	"github.com/elliotxx/healthcheck"
+	"github.com/elliotxx/healthcheck/checks"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-    r := gin.Default()
+	r := gin.Default()
 
-    r.GET("livez", NewHandler(NewDefaultHandlerConfig()))
+	r.GET("livez", healthcheck.NewHandler(healthcheck.NewDefaultHandlerConfig()))
 
-    readyzChecks := []checks.Check{checks.NewPingCheck(), checks.NewEnvCheck("DB_HOST")}
-    r.GET("readyz",NewHandler(NewDefaultHandlerConfigFor(readyzChecks)))
-	
-    r.Run()
+	readyzChecks := []checks.Check{checks.NewPingCheck(), checks.NewEnvCheck("DB_HOST")}
+	r.GET("readyz", healthcheck.NewHandler(healthcheck.NewDefaultHandlerConfigFor(readyzChecks...)))
+
+	r.Run()
 }
 ```
 
-Enjoy it!
+Output:
 
 ```shell
-$ curl -k http://localhost/readyz
+$ curl -k http://localhost:8080/readyz
 OK
 
-$ curl -k http://localhost/readyz?verbose
+$ curl -k http://localhost:8080/readyz?verbose
 [+] Ping ok
 [-] Env-DB_HOST ok
 health check failed
 
-$ curl -k http://localhost/readyz?verbose&excludes=Env-DB_HOST
+$ curl -k http://localhost:8080/readyz?verbose&excludes=Env-DB_HOST
 [+] Ping ok
 health check passed
 ```
+
+Enjoy it!
+
+More examples can be seen: [./example_test.go](./example_test.go)
