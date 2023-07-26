@@ -21,10 +21,22 @@ type CheckStatuses interface {
 	Delete(k string)
 	Len() int
 	Each(f func(k string, v bool))
-	String(verbose bool, excludes []string) string
+	String(verbose bool) string
 }
 
-var _ CheckStatuses = &checkStatuses{}
+var (
+	_ CheckStatuses = &checkStatuses{}
+
+	// stringBuilderPool is a sync.Pool used to reuse strings.Builder
+	// instances.
+	// Reusing builders can help to avoid frequent memory allocations,
+	// which can improve module performance.
+	stringBuilderPool = sync.Pool{
+		New: func() any {
+			return &strings.Builder{}
+		},
+	}
+)
 
 // checkStatuses is a thread-safe implements of CheckStatuses
 // interface.
@@ -85,15 +97,7 @@ func (cs *checkStatuses) Each(f func(k string, v bool)) {
 // String returns a string representation of the check statuses.
 // If verbose is true, the output includes pass/fail status for each
 // check.
-// If excludes is non-empty, checks with the specified names are
-// excluded from the output.
-func (cs *checkStatuses) String(verbose bool, excludes []string) string {
-	if len(excludes) > 0 {
-		for _, checkName := range excludes {
-			cs.Delete(checkName)
-		}
-	}
-
+func (cs *checkStatuses) String(verbose bool) string {
 	passNames := make([]string, 0, cs.Len())
 	failedNames := make([]string, 0, cs.Len())
 	allPass := true
@@ -110,7 +114,10 @@ func (cs *checkStatuses) String(verbose bool, excludes []string) string {
 	sort.Strings(failedNames)
 
 	if verbose {
-		var b strings.Builder
+		b := stringBuilderPool.Get().(*strings.Builder)
+		defer stringBuilderPool.Put(b)
+		defer b.Reset()
+
 		for _, name := range passNames {
 			b.WriteString("[+] " + name + " ok\n")
 		}

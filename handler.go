@@ -24,6 +24,16 @@ func NewHandler(conf HandlerConfig) gin.HandlerFunc {
 			httpStatus = http.StatusOK
 		)
 
+		// Process the request parameters.
+		verbose := conf.Verbose
+		excludes := conf.Excludes
+		if _, ok := c.GetQuery("verbose"); ok {
+			verbose = true
+		}
+		if excludesStr, ok := c.GetQuery("excludes"); ok {
+			excludes = strings.Split(excludesStr, ",")
+		}
+
 		// Create a new check statuses instance.
 		statuses := checks.NewCheckStatuses(len(conf.Checks))
 
@@ -37,6 +47,14 @@ func NewHandler(conf HandlerConfig) gin.HandlerFunc {
 				// Get the name of the check and check if it already
 				// exists in the statuses list.
 				name := captureCheck.Name()
+
+				if len(excludes) > 0 {
+					for _, excludedName := range excludes {
+						if excludedName == name {
+							return nil
+						}
+					}
+				}
 
 				if _, ok := statuses.Get(name); ok {
 					return ErrHealthCheckNamesConflict
@@ -74,15 +92,7 @@ func NewHandler(conf HandlerConfig) gin.HandlerFunc {
 		}
 		mu.Unlock()
 
-		// Process the request parameters.
-		if _, ok := c.GetQuery("verbose"); ok {
-			conf.Verbose = true
-		}
-		if excludesStr, ok := c.GetQuery("excludes"); ok {
-			conf.Excludes = strings.Split(excludesStr, ",")
-		}
-
 		// Return the status response as a string.
-		c.String(httpStatus, statuses.String(conf.Verbose, conf.Excludes))
+		c.String(httpStatus, statuses.String(verbose))
 	}
 }
