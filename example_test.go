@@ -18,9 +18,9 @@ func Example_register() {
 	dummyRequest(r, "/healthz")
 
 	// Output:
-	//
 	// 200
 	// OK
+	//
 }
 
 func Example_registerFor() {
@@ -35,10 +35,10 @@ func Example_registerFor() {
 	dummyRequest(r, "/healthz")
 
 	// Output:
-	//
 	// 200
 	// [+] Ping ok
 	// health check passed
+	//
 }
 
 func Example_customHandler() {
@@ -55,7 +55,6 @@ func Example_customHandler() {
 	dummyRequest(r, "/readyz?verbose&excludes=Env-DB_HOST")
 
 	// Output:
-	//
 	// 200
 	// OK
 	//
@@ -67,13 +66,14 @@ func Example_customHandler() {
 	// 200
 	// [+] Ping ok
 	// health check passed
+	//
 }
 
 func dummyRequest(r *gin.Engine, endpoint string) {
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, endpoint, nil)
 	r.ServeHTTP(w, req)
-	fmt.Println()
 	fmt.Println(w.Code)
 	fmt.Println(w.Body.String())
+	fmt.Println()
 }
